@@ -1,0 +1,103 @@
+name: clang
+
+# Trigger on pushes to all branches and for all pull-requests
+on: 
+  push:
+    tags: af-*
+    #  repository_dispatch:
+
+env:
+  CMAKE_VERSION: 3.16.2
+  NINJA_VERSION: 1.10.0
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        # AppleClang
+        - {
+            name: "macOS Clang",
+            os: macos-latest,
+            build_type: Release,
+          }
+
+    steps:
+    - name: Get tag name
+      id: get_tag_name
+      run: |
+          VERSION=`echo ${GITHUB_REF/refs\/tags\//} | sed 's/clang_//'`
+          echo ::set-output name=VERSION::${VERSION}
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 2
+    - name: Fetch clang
+      shell: bash
+      working-directory: ${{ env.HOME }}
+      run: |
+        git clone https://github.com/andreasfertig/llvm-project.git
+
+    - name: Download Ninja and CMake
+      id: cmake_and_ninja
+      shell: cmake -P {0}
+      run: |
+        set(cmake_version $ENV{CMAKE_VERSION})
+        set(ninja_version $ENV{NINJA_VERSION})
+
+        message(STATUS "Using host CMake version: ${CMAKE_VERSION}")
+
+        if ("${{ runner.os }}" STREQUAL "Windows")
+          set(ninja_suffix "win.zip")
+          set(cmake_suffix "win64-x64.zip")
+          set(cmake_dir "cmake-${cmake_version}-win64-x64/bin")
+        elseif ("${{ runner.os }}" STREQUAL "Linux")
+          set(ninja_suffix "linux.zip")
+          set(cmake_suffix "Linux-x86_64.tar.gz")
+          set(cmake_dir "cmake-${cmake_version}-Linux-x86_64/bin")
+        elseif ("${{ runner.os }}" STREQUAL "macOS")
+          set(ninja_suffix "mac.zip")
+          set(cmake_suffix "Darwin-x86_64.tar.gz")
+          set(cmake_dir "cmake-${cmake_version}-Darwin-x86_64/CMake.app/Contents/bin")
+        endif()
+
+        set(ninja_url "https://github.com/ninja-build/ninja/releases/download/v${ninja_version}/ninja-${ninja_suffix}")
+        file(DOWNLOAD "${ninja_url}" ./ninja.zip SHOW_PROGRESS)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf ./ninja.zip)
+
+        set(cmake_url "https://github.com/Kitware/CMake/releases/download/v${cmake_version}/cmake-${cmake_version}-${cmake_suffix}")
+        file(DOWNLOAD "${cmake_url}" ./cmake.zip SHOW_PROGRESS)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf ./cmake.zip)
+
+        # preserve it for the next steps
+        file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/${cmake_dir}" cmake_dir)
+        message("::set-env name=cmake_dir::${cmake_dir}")
+
+        if (NOT "${{ runner.os }}" STREQUAL "Windows")
+          execute_process(
+            COMMAND chmod +x ninja
+            COMMAND chmod +x ${cmake_dir}/cmake
+          )
+        endif()
+
+    - name: Building
+      shell: bash
+      working-directory: ${{ env.HOME }}
+      env:
+        CXX: clang++
+        CC: clang
+      run: |
+        export PATH=`pwd`:$PATH
+        ls -l
+        echo "${{ steps.get_tag_name.outputs.VERSION }}"
+        ./llvm-release-build.sh `pwd`/llvm-project ${{ steps.get_tag_name.outputs.VERSION }}
+        ls -l
+        pwd
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: clang+llvm-${{ steps.get_tag_name.outputs.VERSION }}-x86_64-apple-darwin
+        path: '~/clang+llvm-${{ steps.get_tag_name.outputs.VERSION }}-x86_64-apple-darwin.tar.xz'
+
