@@ -35,6 +35,12 @@ jobs:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 2
+    - name: Fetch clang
+      shell: bash
+      working-directory: ${{ env.HOME }}
+      run: |
+        git clone https://github.com/llvm/llvm-project.git
+
 
     # - name: Checkout llvm repo
     #   uses: actions/checkout@v2
@@ -168,16 +174,14 @@ jobs:
     #     if (NOT result EQUAL 0)
     #       message(FATAL_ERROR "Bad exit status")
     #     endif()
-    - name: Fetch clang
-      shell: bash
-      working-directory: ${{ env.HOME }}
-      run: |
-        git clone https://github.com/llvm/llvm-project.git
-
     - name: Building
       shell: bash
       working-directory: ${{ env.HOME }}
+      env:
+        CXX: ${{ matrix.config.cxx }}
+        CC: clang
       run: |
+        export PATH=`pwd`:$PATH
         ls -l
         ./llvm-release-build.sh `pwd`/llvm-project 10.0.0
 
