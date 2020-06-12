@@ -179,7 +179,7 @@ jobs:
       working-directory: ${{ env.HOME }}
       run: |
         ls -l
-        ./llvm-release-build.sh llvm-project 10.0.0
+        ./llvm-release-build.sh `pwd`/llvm-project 10.0.0
 
     - uses: actions/upload-artifact@v2
       with:
