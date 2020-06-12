@@ -36,6 +36,12 @@ jobs:
       with:
         fetch-depth: 2
 
+    # - name: Checkout llvm repo
+    #   uses: actions/checkout@v2
+    #   with:
+    #     repository: llvm/llvm-project.git
+    #     path: llvm-project
+
     - name: Download Ninja and CMake
       id: cmake_and_ninja
       shell: cmake -P {0}
@@ -172,7 +178,8 @@ jobs:
       shell: bash
       working-directory: ${{ env.HOME }}
       run: |
-        ./llvm-release-build.sh ${{ env.HOME }}/llvm-project 10.0.0
+        ls -l
+        ./llvm-release-build.sh llvm-project 10.0.0
 
     - uses: actions/upload-artifact@v2
       with:

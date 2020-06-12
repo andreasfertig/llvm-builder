@@ -20,5 +20,5 @@ cmake --build .
 
 umask 002
 sudo mkdir -p /usr/local/${INSTALL_NAME}
-ninja install
-tar -cJf ${INSTALL_NAME}.tar.xz -C /usr/local/${INSTALL_NAME}
+sudo ./ninja install
+sudo tar -cJf ${INSTALL_NAME}.tar.xz -C /usr/local/${INSTALL_NAME}
