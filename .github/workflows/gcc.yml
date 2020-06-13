@@ -182,11 +182,14 @@ jobs:
         CC: clang
       run: |
         export PATH=`pwd`:$PATH
+        echo $HOME
+        ls -l
+        pwd
         mkdir gcc_all && cd gcc_all
         curl -L https://ftpmirror.gnu.org/gcc/gcc-10.1.0/gcc-10.1.0.tar.xz | tar xf -
         cd gcc-10.1.0
         ./contrib/download_prerequisites
-        cd ~/gcc_all
+        cd $HOME/gcc_all
         echo "path changed"
         mkdir build && cd build
         ../gcc10/configure --prefix=/usr/local/gcc-10 --enable-checking=release --enable-languages=c,c++ --disable-multilib --with-sysroot=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk --program-suffix=-10
