@@ -55,7 +55,7 @@ jobs:
         export CXXFLAGS="-Wno-everything"
         export CFLAGS="-Wno-everything"
         ../gcc-${{ steps.get_tag_name.outputs.VERSION }}/configure CXXFLAGS="-Wno-everything" CFLAGS="-Wno-everything" --prefix=/usr/local/gcc-${{ steps.get_tag_name.outputs.VERSION }} --enable-checking=release --enable-languages=c,c++ --enable-silent-rules --disable-multilib --with-sysroot=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk --program-suffix=-10
-        make -j > /dev/null
+        make -j 2&> log.txt && tail -n 200 log.txt || tail -n 200 log.txt 
         echo "build finished"
         sudo mkdir -p /usr/local/gcc-${{ steps.get_tag_name.outputs.VERSION }}
         sudo chmod 0777 /usr/local/gcc-${{ steps.get_tag_name.outputs.VERSION }}
