@@ -54,7 +54,8 @@ jobs:
         ./contrib/download_prerequisites
         cd ../build
         echo "path changed"
-        ../gcc-10.1.0/configure --prefix=/usr/local/gcc-10 --enable-checking=release --enable-languages=c,c++ --enable-silent-rules --disable-multilib --with-sysroot=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk --program-suffix=-10
+        CXXFLAGS="-Wno-array-bounds -Wno-c99-extensions -Wno-gnu-zero-variadic-macro-arguments -Wno-deprecated -Wno-unused-parameter -Wno-unused-command-line-argument  -Wno-unknown-warning-option -Wno-undefined-internal -Wno-invalid-offsetof -Wno-tautological-compare -Wno-mismatched-tag -Wno-ignored-attributes -Wno-unused-function"
+        ../gcc-10.1.0/configure CXXFLAGS="-Wno-array-bounds -Wno-c99-extensions -Wno-gnu-zero-variadic-macro-arguments -Wno-deprecated -Wno-unused-parameter -Wno-unused-command-line-argument  -Wno-unknown-warning-option -Wno-undefined-internal -Wno-invalid-offsetof -Wno-tautological-compare -Wno-mismatched-tag -Wno-ignored-attributes -Wno-unused-function" CFLAGS="-Wno-array-bounds -Wno-c99-extensions -Wno-gnu-zero-variadic-macro-arguments -Wno-deprecated -Wno-unused-parameter -Wno-unused-command-line-argument  -Wno-unknown-warning-option -Wno-undefined-internal -Wno-invalid-offsetof -Wno-tautological-compare -Wno-mismatched-tag -Wno-ignored-attributes -Wno-unused-function" --prefix=/usr/local/gcc-10 --enable-checking=release --enable-languages=c,c++ --enable-silent-rules --disable-multilib --with-sysroot=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk --program-suffix=-10
         make -j > /dev/null
         echo "build finished"
         sudo mkdir -p /usr/local/gcc-10
