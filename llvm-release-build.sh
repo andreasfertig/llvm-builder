@@ -21,8 +21,8 @@ cmake --build . -j 2
 umask 002
 sudo mkdir -p ${INSTALL_PATH}
 sudo chmod 0777 ${INSTALL_PATH}
-cd $HOME
 ninja install-stripped
+cd $HOME
 echo "${INSTALL_NAME}.tar.xz"
 echo "tar -cJf ${INSTALL_NAME}.tar.xz -C ${INSTALL_PATH}"
 tar -cJf ${INSTALL_NAME}.tar.xz -C ${INSTALL_PATH}
