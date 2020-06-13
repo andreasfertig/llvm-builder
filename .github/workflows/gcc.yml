@@ -1,7 +1,8 @@
 name: gcc
 
-# Trigger on pushes to all branches and for all pull-requests
-on: [push, pull_request]
+on: 
+  push:
+    tags: gcc_*
 
 env:
   CMAKE_VERSION: 3.16.2
@@ -15,23 +16,19 @@ jobs:
       fail-fast: false
       matrix:
         config:
-        # GCC-9
-        # - {
-        #     name: "Linux GCC 9",
-        #     os: ubuntu-latest,
-        #     build_type: Release,
-        #     cxx: "g++-9"
-        #   }
-
         # AppleClang
         - {
             name: "macOS Clang",
             os: macos-latest,
-            build_type: Release,
-            cxx: "clang++",
+            build_type: Release
           }
 
     steps:
+    - name: Get tag name
+      id: get_tag_name
+      run: |
+          VERSION=`echo ${GITHUB_REF/refs\/tags\//} | sed 's/gcc_//'`
+          echo ::set-output name=VERSION::${VERSION}
     - uses: actions/checkout@v2
       with:
         fetch-depth: 2
@@ -40,32 +37,34 @@ jobs:
       shell: bash
       working-directory: ${{ env.HOME }}
       env:
-        CXX: ${{ matrix.config.cxx }}
+        CXX: clang++
         CC: clang
       run: |
         export PATH=`pwd`:$PATH
+        echo "${{ steps.get_tag_name.outputs.VERSION }}"
         echo $HOME
         ls -l
         pwd
         mkdir -p gcc_all/build
         cd gcc_all
-        curl -L https://ftpmirror.gnu.org/gcc/gcc-10.1.0/gcc-10.1.0.tar.xz | tar xf -
-        cd gcc-10.1.0
+        curl -L https://ftpmirror.gnu.org/gcc/gcc-${{ steps.get_tag_name.outputs.VERSION }}/gcc-${{ steps.get_tag_name.outputs.VERSION }}.tar.xz | tar xf -
+        cd gcc-${{ steps.get_tag_name.outputs.VERSION }}
         ./contrib/download_prerequisites
         cd ../build
         echo "path changed"
-        CXXFLAGS="-Wno-array-bounds -Wno-c99-extensions -Wno-gnu-zero-variadic-macro-arguments -Wno-deprecated -Wno-unused-parameter -Wno-unused-command-line-argument  -Wno-unknown-warning-option -Wno-undefined-internal -Wno-invalid-offsetof -Wno-tautological-compare -Wno-mismatched-tag -Wno-ignored-attributes -Wno-unused-function"
-        ../gcc-10.1.0/configure CXXFLAGS="-Wno-array-bounds -Wno-c99-extensions -Wno-gnu-zero-variadic-macro-arguments -Wno-deprecated -Wno-unused-parameter -Wno-unused-command-line-argument  -Wno-unknown-warning-option -Wno-undefined-internal -Wno-invalid-offsetof -Wno-tautological-compare -Wno-mismatched-tag -Wno-ignored-attributes -Wno-unused-function" CFLAGS="-Wno-array-bounds -Wno-c99-extensions -Wno-gnu-zero-variadic-macro-arguments -Wno-deprecated -Wno-unused-parameter -Wno-unused-command-line-argument  -Wno-unknown-warning-option -Wno-undefined-internal -Wno-invalid-offsetof -Wno-tautological-compare -Wno-mismatched-tag -Wno-ignored-attributes -Wno-unused-function" --prefix=/usr/local/gcc-10 --enable-checking=release --enable-languages=c,c++ --enable-silent-rules --disable-multilib --with-sysroot=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk --program-suffix=-10
+        export CXXFLAGS="-Wno-everything"
+        export CFLAGS="-Wno-everything"
+        ../gcc-${{ steps.get_tag_name.outputs.VERSION }}/configure CXXFLAGS="-Wno-everything" CFLAGS="-Wno-everything" --prefix=/usr/local/gcc-${{ steps.get_tag_name.outputs.VERSION }} --enable-checking=release --enable-languages=c,c++ --enable-silent-rules --disable-multilib --with-sysroot=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk --program-suffix=-10
         make -j > /dev/null
         echo "build finished"
-        sudo mkdir -p /usr/local/gcc-10
-        sudo chmod 0777 /usr/local/gcc-10
+        sudo mkdir -p /usr/local/gcc-${{ steps.get_tag_name.outputs.VERSION }}
+        sudo chmod 0777 /usr/local/gcc-${{ steps.get_tag_name.outputs.VERSION }}
         ls -l /usr/local        
         make install-strip
-        tar -cJf ../../gcc-10.tar.xz -C /usr/local/gcc-10 /usr/local/gcc-10
+        tar -cJf ../../gcc-${{ steps.get_tag_name.outputs.VERSION }}.tar.xz -C /usr/local/gcc-${{ steps.get_tag_name.outputs.VERSION }} /usr/local/gcc-${{ steps.get_tag_name.outputs.VERSION }}
 
     - uses: actions/upload-artifact@v2
       with:
-        name: gcc
-        path: gcc-10.tar.xz
+        name: gcc-${{ steps.get_tag_name.outputs.VERSION }}
+        path: gcc-${{ steps.get_tag_name.outputs.VERSION }}.tar.xz
 

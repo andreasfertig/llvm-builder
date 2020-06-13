@@ -4,6 +4,7 @@ name: clang
 on: 
   push:
     tags: clang_*
+    #  repository_dispatch:
 
 env:
   CMAKE_VERSION: 3.16.2
