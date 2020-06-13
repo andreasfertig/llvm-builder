@@ -183,8 +183,7 @@ jobs:
       run: |
         export PATH=`pwd`:$PATH
         ls -l
-        #./llvm-release-build.sh `pwd`/llvm-project 10.0.0
-        touch $HOME/clang+llvm-10.0.0-x86_64-apple-darwin.tar.xz
+        ./llvm-release-build.sh `pwd`/llvm-project 10.0.0
         ls -l
         pwd
 
