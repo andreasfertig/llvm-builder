@@ -192,7 +192,7 @@ jobs:
         ./contrib/download_prerequisites
         cd ../build
         echo "path changed"
-        ../gcc10/configure --prefix=/usr/local/gcc-10 --enable-checking=release --enable-languages=c,c++ --disable-multilib --with-sysroot=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk --program-suffix=-10
+        ../gcc-10.1.0/configure --prefix=/usr/local/gcc-10 --enable-checking=release --enable-languages=c,c++ --disable-multilib --with-sysroot=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk --program-suffix=-10
         make -j
         sudo mkdir -p /usr/local/gcc-10
         sudo chmod 0777 /usr/local/gcc-10
