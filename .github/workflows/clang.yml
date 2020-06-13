@@ -1,7 +1,9 @@
 name: clang
 
 # Trigger on pushes to all branches and for all pull-requests
-on: [push, pull_request]
+on: 
+  push:
+    tags: clang_*
 
 env:
   CMAKE_VERSION: 3.16.2
@@ -15,23 +17,19 @@ jobs:
       fail-fast: false
       matrix:
         config:
-        # GCC-9
-        # - {
-        #     name: "Linux GCC 9",
-        #     os: ubuntu-latest,
-        #     build_type: Release,
-        #     cxx: "g++-9"
-        #   }
-
         # AppleClang
         - {
             name: "macOS Clang",
             os: macos-latest,
             build_type: Release,
-            cxx: "clang++",
           }
 
     steps:
+    - name: Get tag name
+      id: get_tag_name
+      run: |
+          VERSION=`echo ${GITHUB_REF/refs\/tags\//} | sed 's/clang_//'`
+          echo ::set-output name=VERSION::${VERSION}
     - uses: actions/checkout@v2
       with:
         fetch-depth: 2
@@ -40,13 +38,6 @@ jobs:
       working-directory: ${{ env.HOME }}
       run: |
         git clone https://github.com/llvm/llvm-project.git
-
-
-    # - name: Checkout llvm repo
-    #   uses: actions/checkout@v2
-    #   with:
-    #     repository: llvm/llvm-project.git
-    #     path: llvm-project
 
     - name: Download Ninja and CMake
       id: cmake_and_ninja
@@ -90,105 +81,22 @@ jobs:
           )
         endif()
 
-    - name: Install Clang 10
-      id: install_clang_10
-      if: startsWith(matrix.config.os, 'ubuntu') && ( matrix.config.cxx == 'clang++-10' )
-      shell: bash
-      working-directory: ${{ env.HOME }}
-      run: |
-        wget https://apt.llvm.org/llvm.sh
-        chmod +x llvm.sh
-        sudo ./llvm.sh ${{ matrix.config.clang_version }}
-
-    - name: Install libc++
-      id: install_libcxx
-      if: matrix.config.libcxx
-      shell: bash
-      working-directory: ${{ env.HOME }}
-      env:
-        CXX: ${{ matrix.config.cxx }}
-      run: |
-        sudo apt-get install libc++-${{ matrix.config.clang_version }}-dev libc++abi-${{ matrix.config.clang_version }}-dev
-
-    # - name: Configure
-    #   id: cmake_configure
-    #   shell: cmake -P {0}
-    #   run: |
-    #     set(ENV{CXX} ${{ matrix.config.cxx }})
-
-    #     if ("${{ runner.os }}" STREQUAL "Windows")
-    #       execute_process(
-    #         COMMAND "${{ matrix.config.environment_script }}" && set
-    #         OUTPUT_FILE environment_script_output.txt
-    #       )
-    #       set(cxx_flags "/permissive- /EHsc")
-    #       file(STRINGS environment_script_output.txt output_lines)
-    #       foreach(line IN LISTS output_lines)
-    #         if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
-    #           set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
-    #           # preserve it for the next steps
-    #           message("::set-env name=${CMAKE_MATCH_1}::$ENV{${CMAKE_MATCH_1}}")
-    #         endif()
-    #       endforeach()
-    #     endif()
-
-    #     set(path_separator ":")
-    #     if ("${{ runner.os }}" STREQUAL "Windows")
-    #       set(path_separator ";")
-    #     endif()
-    #     set(ENV{PATH} "$ENV{GITHUB_WORKSPACE}${path_separator}$ENV{PATH}")
-    #     # preserve it for the next steps
-    #     message("::set-env name=PATH::$ENV{PATH}")
-
-    #     if ("x${{ matrix.config.libcxx }}" STREQUAL "xtrue")
-    #       set(cxx_flags "${cxx_flags} -stdlib=libc++ -Wno-unused-command-line-argument")
-    #       set(link_flags "${link_flags} -lc++abi")
-    #     endif()
-
-    #     execute_process(
-    #       COMMAND $ENV{cmake_dir}/cmake
-    #         -S .
-    #         -B build
-    #         -G Ninja
-    #         -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
-    #         -D CMAKE_MAKE_PROGRAM:STRING=ninja
-    #         -D "CMAKE_CXX_FLAGS:STRING=${cxx_flags}"
-    #         -D "CMAKE_EXE_LINKER_FLAGS:STRING=${link_flags}"
-    #         ${{ matrix.config.cmake_args }}
-    #       RESULT_VARIABLE result
-    #     )
-    #     if (NOT result EQUAL 0)
-    #       message(FATAL_ERROR "Bad exit status")
-    #     endif()
-
-    # - name: Build
-    #   shell: cmake -P {0}
-    #   continue-on-error: false
-    #   run: |
-    #     set(ENV{NINJA_STATUS} "[%f/%t %o/sec] ")
-
-    #     execute_process(
-    #       COMMAND $ENV{cmake_dir}/cmake --build build
-    #       RESULT_VARIABLE result
-    #     )
-    #     if (NOT result EQUAL 0)
-    #       message(FATAL_ERROR "Bad exit status")
-    #     endif()
     - name: Building
       shell: bash
       working-directory: ${{ env.HOME }}
       env:
-        CXX: ${{ matrix.config.cxx }}
+        CXX: clang++
         CC: clang
       run: |
         export PATH=`pwd`:$PATH
         ls -l
-        ./llvm-release-build.sh `pwd`/llvm-project 10.0.0
+        echo "${{ steps.get_tag_name.outputs.VERSION }}"
+        ./llvm-release-build.sh `pwd`/llvm-project ${{ steps.get_tag_name.outputs.VERSION }}
         ls -l
         pwd
 
     - uses: actions/upload-artifact@v2
       with:
-        name: clang+llvm-10.0.0-x86_64-apple-darwin
-        path: '~/clang+llvm-10.0.0-x86_64-apple-darwin.tar.xz'
+        name: clang+llvm-${{ steps.get_tag_name.outputs.VERSION }}-x86_64-apple-darwin
+        path: '~/clang+llvm-${{ steps.get_tag_name.outputs.VERSION }}-x86_64-apple-darwin.tar.xz'
 

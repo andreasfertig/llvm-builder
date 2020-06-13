@@ -8,7 +8,11 @@ BUILD_DIR=build_llvm-${LLVM_REV}
 INSTALL_NAME=clang+llvm-${LLVM_REV}-x86_64-apple-darwin
 INSTALL_PATH=/usr/local/${INSTALL_NAME}
 
-(cd ${GIT_REPO} && git checkout llvmorg-${LLVM_REV})
+if [ "$LLVM_REV" != "current" ]; then
+  (cd ${GIT_REPO} && git checkout llvmorg-${LLVM_REV})
+else
+  echo "Building current"
+fi
 
 mkdir -p ${BUILD_DIR}
 
