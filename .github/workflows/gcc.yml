@@ -1,4 +1,4 @@
-name: clang
+name: gcc
 
 # Trigger on pushes to all branches and for all pull-requests
 on: [push, pull_request]
