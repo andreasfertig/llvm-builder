@@ -185,19 +185,19 @@ jobs:
         echo $HOME
         ls -l
         pwd
-        mkdir gcc_all && cd gcc_all
+        mkdir -p gcc_all/build
+        cd gcc_all
         curl -L https://ftpmirror.gnu.org/gcc/gcc-10.1.0/gcc-10.1.0.tar.xz | tar xf -
         cd gcc-10.1.0
         ./contrib/download_prerequisites
-        cd $HOME/gcc_all
+        cd ../build
         echo "path changed"
-        mkdir build && cd build
         ../gcc10/configure --prefix=/usr/local/gcc-10 --enable-checking=release --enable-languages=c,c++ --disable-multilib --with-sysroot=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk --program-suffix=-10
         make -j
         sudo mkdir -p /usr/local/gcc-10
         sudo chmod 0777 /usr/local/gcc-10
         make install-strip
-        tar -cJf $HOME/gcc-10.tar.xz -C /usr/local/gcc-10
+        tar -cJf ../../gcc-10.tar.xz -C /usr/local/gcc-10
 
     - uses: actions/upload-artifact@v2
       with:
