@@ -16,9 +16,13 @@ cd ${BUILD_DIR}
 
 cmake -G "Ninja" -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH} -DCMAKE_BUILD_TYPE=Release -DLLVM_INCLUDE_EXAMPLES=0 -DLLVM_INCLUDE_TESTS=0 -DLLVM_ENABLE_PROJECTS="compiler-rt;clang;libcxx;libcxxabi" -DLLVM_ENABLE_CXX1Y=Yes -DLLVM_TARGETS_TO_BUILD=X86 ${GIT_REPO}/llvm
 
-cmake --build .
+cmake --build . -j 2
 
 umask 002
-sudo mkdir -p /usr/local/${INSTALL_NAME}
-sudo ninja install
-sudo tar -cJf ${INSTALL_NAME}.tar.xz -C /usr/local/${INSTALL_NAME}
+sudo mkdir -p ${INSTALL_PATH}
+sudo chmod 0777 ${INSTALL_PATH}
+cd $HOME
+ninja install-stripped
+echo "${INSTALL_NAME}.tar.xz"
+echo "tar -cJf ${INSTALL_NAME}.tar.xz -C ${INSTALL_PATH}"
+tar -cJf ${INSTALL_NAME}.tar.xz -C ${INSTALL_PATH}
