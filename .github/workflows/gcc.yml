@@ -61,7 +61,7 @@ jobs:
         sudo chmod 0777 /usr/local/gcc-10
         ls -l /usr/local        
         make install-strip
-        tar -cJf ../../gcc-10.tar.xz -C /usr/local/gcc-10
+        tar -cJf ../../gcc-10.tar.xz -C /usr/local/gcc-10 /usr/local/gcc-10
 
     - uses: actions/upload-artifact@v2
       with:

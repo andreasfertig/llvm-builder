@@ -25,4 +25,4 @@ ninja install
 #cd $HOME
 echo "${INSTALL_NAME}.tar.xz"
 echo "tar -cJf $HOME/${INSTALL_NAME}.tar.xz -C ${INSTALL_PATH}"
-tar -cJf $HOME/${INSTALL_NAME}.tar.xz -C ${INSTALL_PATH}
+tar -cJf $HOME/${INSTALL_NAME}.tar.xz -C ${INSTALL_PATH} ${INSTALL_PATH}
