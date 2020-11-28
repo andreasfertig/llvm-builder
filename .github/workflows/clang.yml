@@ -73,7 +73,6 @@ jobs:
 
         # preserve it for the next steps
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/${cmake_dir}" cmake_dir)
-        message("::set-env name=cmake_dir::${cmake_dir}")
 
         if (NOT "${{ runner.os }}" STREQUAL "Windows")
           execute_process(
