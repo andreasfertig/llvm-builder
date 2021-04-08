@@ -28,7 +28,7 @@ if [ "${TYPE}" == "clang" ]; then
     ninja check-clang
 
 elif [ "${TYPE}" == "libcxx" ]; then
-    cmake -G "Ninja" -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH} -DCMAKE_BUILD_TYPE=Release -DLLVM_INCLUDE_EXAMPLES=0 -DLLVM_INCLUDE_TESTS=1 -DLIBCXX_INCLUDE_TESTS=1 -DLLVM_ENABLE_PROJECTS="compiler-rt;clang;libcxx;libcxxabi" -DLLVM_TARGETS_TO_BUILD=X86 ${GIT_REPO}/llvm
+    cmake -G "Ninja" -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH} -DCMAKE_BUILD_TYPE=Release -DLLVM_INCLUDE_EXAMPLES=0 -DLLVM_INCLUDE_TESTS=1 -DLIBCXX_INCLUDE_TESTS=1 -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi" -DLLVM_TARGETS_TO_BUILD=X86 ${GIT_REPO}/llvm
     ninja check-cxx
 else
     echo "Unspported type ${TYPE}"
